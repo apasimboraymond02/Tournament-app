@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skillr - Leaderboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab { padding: 10px 20px; cursor: pointer; font-weight: bold; color: #666; }
+        .tab.active { color: #007bff; border-bottom: 2px solid #007bff; margin-bottom: -2px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; }
+        .rank-1 { color: gold; font-weight: bold; }
+        .rank-2 { color: silver; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">Home</a>
+            <a href="social.html">Social</a>
+            <a href="teams.html">Teams</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
+
+        <div class="card">
+            <h1>Global Leaderboards</h1>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('all_time')">All Time</div>
+                <div class="tab" onclick="switchTab('monthly')">Monthly</div>
+                <div class="tab" onclick="switchTab('weekly')">Weekly</div>
+            </div>
+
+            <div id="leaderboardContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                            <th>Earnings</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentTab = 'all_time';
+
+        async function loadLeaderboard(timeframe) {
+            try {
+                const res = await fetch(`${API_URL}/leaderboard/${timeframe}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    renderTable(data.leaderboard);
+                }
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboardBody').innerHTML = '<tr><td colspan="5">Error loading data</td></tr>';
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('leaderboardBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No data available for this period</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(entry => `
+                <tr>
+                    <td class="rank-${entry.rank}">#${entry.rank}</td>
+                    <td>${entry.username}</td>
+                    <td>${entry.points.toLocaleString()}</td>
+                    <td>${entry.wins}</td>
+                    <td>GHS ${entry.earnings.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        window.switchTab = (timeframe) => {
+            // Update UI
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            currentTab = timeframe;
+            loadLeaderboard(timeframe);
+        };
+
+        // Initial load
+        loadLeaderboard('all_time');
+    </script>
+</body>
+</html>

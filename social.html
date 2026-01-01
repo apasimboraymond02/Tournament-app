@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skillr - Social</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .btn { padding: 5px 15px; border-radius: 4px; border: none; cursor: pointer; color: white; }
+        .btn-add { background: #007bff; }
+        .btn-accept { background: #28a745; }
+        input { padding: 8px; width: 70%; border: 1px solid #ddd; border-radius: 4px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">Home</a>
+            <a href="social.html">Social</a>
+            <a href="teams.html">Teams</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
+
+        <h1>Social Hub</h1>
+
+        <!-- Search Users -->
+        <div class="card">
+            <h2>Find Friends</h2>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="searchInput" placeholder="Search by username...">
+                <button class="btn btn-add" onclick="searchUsers()">Search</button>
+            </div>
+            <div id="searchResults" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Friend Requests -->
+        <div id="requestsSection" class="card" style="display: none;">
+            <h2>Friend Requests</h2>
+            <div id="requestsList"></div>
+        </div>
+
+        <!-- Friends List -->
+        <div class="card">
+            <h2>My Friends</h2>
+            <div id="friendsList">
+                <p>Loading friends...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import realtimeManager from './realtime.js';
+
+        const API_URL = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+
+        if (!token) window.location.href = 'login.html';
+
+        async function loadSocialData() {
+            try {
+                const res = await fetch(`${API_URL}/social/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    renderFriends(data.socialData.friends.list);
+                    renderRequests(data.socialData.pendingRequests);
+                }
+            } catch (error) {
+                console.error('Error loading social data:', error);
+            }
+        }
+
+        function renderFriends(friends) {
+            const container = document.getElementById('friendsList');
+            if (friends.length === 0) {
+                container.innerHTML = '<p>No friends yet. Search for users to add them!</p>';
+                return;
+            }
+            container.innerHTML = friends.map(f => `
+                <div class="user-item">
+                    <span>User ID: ${f.userId}</span>
+                    <small>Friends since: ${new Date(f.friendSince).toLocaleDateString()}</small>
+                </div>
+            `).join('');
+        }
+
+        function renderRequests(requests) {
+            const section = document.getElementById('requestsSection');
+            const container = document.getElementById('requestsList');
+            
+            // Filter only incoming requests
+            // Note: The API returns both sent and received pending requests. 
+            // We need to check logic, but assuming we want to accept incoming ones.
+            // The API doesn't explicitly say which is which in the list easily without user ID context.
+            // For now, we display all pending where status is pending.
+            
+            if (requests.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            container.innerHTML = requests.map(req => `
+                <div class="user-item">
+                    <span>Request from User ID: ${req.senderId}</span>
+                    <button class="btn btn-accept" onclick="acceptRequest('${req.id}')">Accept</button>
+                </div>
+            `).join('');
+        }
+
+        window.searchUsers = async () => {
+            const query = document.getElementById('searchInput').value;
+            if (query.length < 2) return;
+
+            try {
+                const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const container = document.getElementById('searchResults');
+                if (data.users.length === 0) {
+                    container.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.users.map(u => `
+                    <div class="user-item">
+                        <span>${u.username}</span>
+                        <button class="btn btn-add" onclick="sendRequest(${u.id})">Add Friend</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        };
+
+        window.sendRequest = async (receiverId) => {
+            try {
+                const res = await fetch(`${API_URL}/friends/request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ receiverId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Friend request sent!');
+                    loadSocialData(); // Refresh to show pending
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Failed to send request');
+            }
+        };
+
+        window.acceptRequest = async (requestId) => {
+            try {
+                const res = await fetch(`${API_URL}/friends/request/${requestId}/accept`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Friend request accepted!');
+                    loadSocialData();
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Failed to accept request');
+            }
+        };
+
+        // Realtime listeners
+        realtimeManager.on('friend_request', (data) => {
+            alert(data.message);
+            loadSocialData();
+        });
+
+        realtimeManager.on('friend_request_accepted', (data) => {
+            alert(data.message);
+            loadSocialData();
+        });
+
+        loadSocialData();
+    </script>
+</body>
+</html>

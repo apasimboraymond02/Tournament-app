@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Skillr - Competitive Gaming Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(45deg, #00D4FF, #0099FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .tagline {
+            color: #00D4FF;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-link {
+            color: #00D4FF;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.register {
+            color: #000;
+            background: #00D4FF;
+            font-weight: bold;
+        }
+
+        .nav-link.register:hover {
+            background: #00B8E6;
+        }
+
+        .user-menu {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-greeting {
+            color: #00D4FF;
+            font-size: 0.9rem;
+        }
+
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(45deg, #00D4FF, #0099FF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            min-width: 150px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-dropdown a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown a:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .logout-btn {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 600px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #00D4FF;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00D4FF;
+            font-size: 1.2rem;
+        }
+
+        /* Filter Buttons */
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0 40px;
+        }
+
+        .filter-btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #00D4FF;
+            color: #000;
+        }
+
+        /* Tournament Grid */
+        .tournaments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .tournament-card {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            cursor: pointer;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tournament-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.15);
+            border-color: #00D4FF;
+        }
+
+        .card-banner {
+            height: 150px;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .game-icon-container {
+            position: absolute;
+            bottom: -30px;
+            left: 20px;
+            width: 70px;
+            height: 70px;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #00D4FF;
+        }
+
+        .game-icon-container img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .card-content {
+            padding: 40px 20px 20px;
+        }
+
+        .game-title {
+            font-size: 1.4rem;
+            color: #00D4FF;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .tournament-info {
+            margin: 15px 0;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .value {
+            color: #fff;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .skillr-currency {
+            color: #00D4FF;
+            font-weight: bold;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0 15px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-open {
+            background: rgba(0, 212, 255, 0.15);
+            color: #00D4FF;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .status-coming {
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .players-count {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .mobile-money-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-mtn {
+            background: linear-gradient(45deg, #FFCC00, #FF9900);
+            color: #000;
+        }
+
+        .btn-vodafone {
+            background: linear-gradient(45deg, #E60000, #CC0000);
+            color: #fff;
+        }
+
+        .payment-btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 15px 0;
+            text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .countdown-label {
+            color: #00D4FF;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .countdown-time {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            font-family: monospace;
+        }
+
+        /* Loading & Error States */
+        .loading {
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 80px 20px;
+            color: #00D4FF;
+        }
+
+        .error {
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 50px;
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-bar {
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            
+            .tournaments-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .filter-buttons {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .filter-btn {
+                white-space: nowrap;
+            }
+            
+            .user-dropdown {
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                left: 20px;
+                width: auto;
+            }
+        }
+
+        /* Featured Tournaments */
+        .featured-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(45deg, #FF0080, #FF8C00);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .skillr-pro {
+            display: inline-block;
+            background: linear-gradient(45deg, #FF0080, #FF8C00);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- Navigation Bar -->
+            <div class="nav-bar">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                
+                <div id="authButtons">
+                    <!-- Login/Register buttons when user is NOT logged in -->
+                    <a href="login.html" class="nav-link">🔐 Login</a>
+                    <a href="register.html" class="nav-link register">🎮 Register</a>
+                </div>
+                
+                <div id="userMenu" class="user-menu">
+                    <!-- User menu when user IS logged in -->
+                    <span id="userGreeting" class="user-greeting">Welcome!</span>
+                    <div class="user-avatar-small" id="userAvatarSmall">S</div>
+                    <div id="userDropdown" class="user-dropdown">
+                        <a href="dashboard.html">📊 Dashboard</a>
+                        <a href="profile.html">👤 Profile</a>
+                        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                        <!-- Add to nav menu -->
+                        <a href="leaderboard.html" class="nav-link">🏆 Leaderboards</a>
+                        <a href="social.html" class="nav-link">👥 Social</a>
+                        <a href="teams.html" class="nav-link">🤝 Teams</a>
+
+                        <!-- For admin users -->
+                        <a href="analytics.html" class="nav-link">📊 Analytics</a>    
+                    </div>
+                </div>
+            </div>
+            
+            <h1>🎯 SKILLR</h1>
+            <p>Compete. Win. Get Paid Instantly 💰</p>
+            <p class="tagline">Prove Your Skills, Earn Real Rewards</p>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" 
+                       class="search-input" 
+                       id="searchInput" 
+                       placeholder="🔍 Search tournaments (Free Fire, COD, PUBG...)"
+                       onkeyup="filterTournaments()">
+                <div class="search-icon">🔍</div>
+            </div>
+            
+            <!-- Filter Buttons -->
+            <div class="filter-buttons" id="filterButtons">
+                <button class="filter-btn active" onclick="filterByGame('all')">All Games</button>
+                <button class="filter-btn" onclick="filterByGame('Free Fire')">Free Fire</button>
+                <button class="filter-btn" onclick="filterByGame('Call of Duty')">Call of Duty</button>
+                <button class="filter-btn" onclick="filterByGame('PUBG')">PUBG Mobile</button>
+                <button class="filter-btn" onclick="filterByGame('Mobile Legends')">Mobile Legends</button>
+                <button class="filter-btn" onclick="filterByGame('Fortnite')">Fortnite</button>
+                <button class="filter-btn" onclick="filterByGame('FC Mobile')">FC Mobile</button>
+                <button class="filter-btn" onclick="filterByGame('NBA')">NBA 2K</button>
+                <button class="filter-btn" onclick="filterByGame('eFootball')">eFootball</button>
+                <button class="filter-btn" onclick="filterByPrice('free')">Free Entry</button>
+                <button class="filter-btn" onclick="filterByPrice('low')">₵ 1-10</button>
+                <button class="filter-btn" onclick="filterByPrice('high')">₵ 50+</button>
+                <button class="filter-btn" onclick="filterByGame('featured')">⭐ Featured</button>
+            </div>
+        </div>
+        
+        <!-- Tournament Grid -->
+        <div id="data" class="loading">Loading tournaments...</div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Skillr | Prove Your Skills, Earn Real Rewards</p>
+        <p>Powered by Instant Payments • Secure & Fast Registration</p>
+    </div>
+
+    <script src="realtime.js" type="module" defer></script>
+
+    <script>
+        let allTournaments = [];
+        let currentFilter = 'all';
+
+        // ==================== AUTHENTICATION FUNCTIONS ====================
+        function checkAuthStatus() {
+            const token = localStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            const authButtons = document.getElementById('authButtons');
+            const userMenu = document.getElementById('userMenu');
+            const userGreeting = document.getElementById('userGreeting');
+            const userAvatar = document.getElementById('userAvatarSmall');
+            
+            if (token && user) {
+                // User is logged in
+                authButtons.style.display = 'none';
+                userMenu.style.display = 'flex';
+                
+                // Update user info
+                userGreeting.textContent = `Hi, ${user.username || 'Skillr'}!`;
+                const firstLetter = (user.username || 'S').charAt(0).toUpperCase();
+                userAvatar.textContent = firstLetter;
+                
+                // Setup avatar click event
+                userAvatar.onclick = function() {
+                    const dropdown = document.getElementById('userDropdown');
+                    dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+                };
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    const dropdown = document.getElementById('userDropdown');
+                    const avatar = document.getElementById('userAvatarSmall');
+                    if (dropdown && avatar && !avatar.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            } else {
+                // User is not logged in
+                authButtons.style.display = 'flex';
+                userMenu.style.display = 'none';
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                checkAuthStatus();
+                showNotification('Logged out successfully!');
+            }
+        }
+
+        // ==================== TOURNAMENT FUNCTIONS ====================
+        async function loadTournaments() {
+            try {
+                const response = await fetch('http://localhost:5000/api/tournaments');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.tournaments || !Array.isArray(data.tournaments)) {
+                    throw new Error('Invalid data format');
+                }
+                
+                allTournaments = data.tournaments;
+                displayTournaments(allTournaments);
+                
+            } catch (error) {
+                console.error('Error loading tournaments:', error);
+                document.getElementById('data').innerHTML = `
+                    <div class="error">
+                        <h3>⚠️ Connection Error</h3>
+                        <p>Unable to load tournaments. Please make sure:</p>
+                        <ol>
+                            <li>Backend server is running on http://localhost:5000</li>
+                            <li>You're connected to the internet</li>
+                        </ol>
+                        <p><em>Error: ${error.message}</em></p>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #00D4FF; color: #000; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayTournaments(tournaments) {
+            if (tournaments.length === 0) {
+                document.getElementById('data').innerHTML = `
+                    <div class="no-results">
+                        <h3>🎮 No Tournaments Found</h3>
+                        <p>Try adjusting your search or filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="tournaments-grid">';
+            
+            tournaments.forEach(tournament => {
+                const statusClass = tournament.status === 'Open' ? 'status-open' : 'status-coming';
+                const countdown = calculateCountdown(tournament.date, tournament.time);
+                const isFeatured = tournament.id === 1 || tournament.id === 3;
+                const hasPro = tournament.id === 1;
+                
+                html += `
+                    <a href="tournament.html?id=${tournament.id}" class="tournament-card">
+                        ${isFeatured ? '<div class="featured-badge">⭐ FEATURED</div>' : ''}
+                        <div class="card-banner">
+                            ${tournament.banner ? `
+                                <img src="${tournament.banner}" alt="${tournament.game}" onerror="this.style.display='none'">
+                            ` : ''}
+                            <div class="game-icon-container">
+                                ${tournament.image ? `
+                                    <img src="${tournament.image}" alt="${tournament.game}" onerror="this.innerHTML='🎮'">
+                                ` : '🎮'}
+                            </div>
+                        </div>
+                        
+                        <div class="card-content">
+                            <h3 class="game-title">
+                                ${tournament.title}
+                                ${hasPro ? '<span class="skillr-pro">PRO</span>' : ''}
+                            </h3>
+                            
+                            <div class="tournament-info">
+                                <div class="info-item">
+                                    <span class="label">Entry Fee:</span>
+                                    <span class="value skillr-currency">₵ ${tournament.entryFee}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Prize Pool:</span>
+                                    <span class="value skillr-currency">₵ ${tournament.prize}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Players:</span>
+                                    <span class="value">${tournament.players} / ${tournament.maxPlayers}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Date:</span>
+                                    <span class="value">${formatDate(tournament.date)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="countdown">
+                                <div class="countdown-label">Registration Closes In:</div>
+                                <div class="countdown-time" id="countdown-${tournament.id}">${countdown}</div>
+                            </div>
+                            
+                            <div class="status-container">
+                                <span class="status ${statusClass}">${tournament.status}</span>
+                                <span class="players-count">${tournament.players} registered</span>
+                            </div>
+                            
+                            ${tournament.status === 'Open' ? `
+                            <div class="mobile-money-buttons">
+                                <button class="payment-btn btn-mtn" onclick="handlePaymentClick(${tournament.id}, 'MTN', event)">
+                                    <span style="font-size: 1.2em;">💰</span> MTN MoMo
+                                </button>
+                                <button class="payment-btn btn-vodafone" onclick="handlePaymentClick(${tournament.id}, 'Vodafone', event)">
+                                    <span style="font-size: 1.2em;">📱</span> Vodafone Cash
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </a>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('data').innerHTML = html;
+            
+            // Start countdown timers
+            startCountdownTimers(tournaments);
+        }
+
+        function calculateCountdown(dateString, timeString) {
+            const tournamentDate = new Date(`${dateString}T${timeString}`);
+            const now = new Date();
+            const diff = tournamentDate - now;
+            
+            if (diff <= 0) return "Registration Closed";
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
+        }
+
+        function startCountdownTimers(tournaments) {
+            setInterval(() => {
+                tournaments.forEach(tournament => {
+                    const countdownElement = document.getElementById(`countdown-${tournament.id}`);
+                    if (countdownElement) {
+                        countdownElement.textContent = calculateCountdown(tournament.date, tournament.time);
+                    }
+                });
+            }, 60000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // ==================== SEARCH & FILTER FUNCTIONS ====================
+        function filterTournaments() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allTournaments.filter(tournament => 
+                tournament.game.toLowerCase().includes(searchTerm) ||
+                tournament.title.toLowerCase().includes(searchTerm)
+            );
+            displayTournaments(filtered);
+        }
+
+        function filterByGame(game) {
+            currentFilter = game;
+            updateFilterButtons(game);
+            
+            if (game === 'all') {
+                displayTournaments(allTournaments);
+                return;
+            }
+            
+            if (game === 'featured') {
+                const filtered = allTournaments.filter(tournament => 
+                    tournament.id === 1 || tournament.id === 3
+                );
+                displayTournaments(filtered);
+                return;
+            }
+            
+            const filtered = allTournaments.filter(tournament => 
+                tournament.game.toLowerCase().includes(game.toLowerCase())
+            );
+            displayTournaments(filtered);
+        }
+
+        function filterByPrice(priceRange) {
+            updateFilterButtons(priceRange);
+            
+            let filtered;
+            switch(priceRange) {
+                case 'free':
+                    filtered = allTournaments.filter(t => t.entryFee === 0);
+                    break;
+                case 'low':
+                    filtered = allTournaments.filter(t => t.entryFee <= 10 && t.entryFee > 0);
+                    break;
+                case 'high':
+                    filtered = allTournaments.filter(t => t.entryFee >= 50);
+                    break;
+                default:
+                    filtered = allTournaments;
+            }
+            
+            displayTournaments(filtered);
+        }
+
+        function updateFilterButtons(activeFilter) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes(activeFilter) || 
+                    (activeFilter === 'all' && btn.textContent === 'All Games')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // ==================== PAYMENT FUNCTIONS ====================
+        function handlePaymentClick(tournamentId, paymentMethod, event) {
+            event.stopPropagation();
+            event.preventDefault();
+            
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                if (confirm('Please login or register to join tournaments. Go to login page?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+            
+            // Redirect to tournament page for payment
+            window.location.href = `tournament.html?id=${tournamentId}`;
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 212, 255, 0.9);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+                font-weight: bold;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ==================== INITIALIZATION ====================
+        function initializePage() {
+            loadTournaments();
+            checkAuthStatus();
+        }
+
+        // Load everything when page loads
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

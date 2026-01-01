@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skillr - Tournaments</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Navigation */
+        .nav { margin-bottom: 30px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .nav a { margin-right: 20px; text-decoration: none; color: #555; font-weight: 600; transition: color 0.2s; }
+        .nav a:hover, .nav a.active { color: #007bff; }
+
+        /* Filters */
+        .filters { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 20px; border: 1px solid #e0e0e0; border-radius: 20px; background: white; cursor: pointer; transition: all 0.2s; color: #555; font-weight: 500; }
+        .filter-btn:hover { background: #f8f9fa; }
+        .filter-btn.active { background: #007bff; color: white; border-color: #007bff; }
+
+        /* Grid Layout */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        
+        /* Tournament Card */
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card-img-container { position: relative; height: 180px; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .status-badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .status-Open { background: #28a745; color: white; }
+        .status-Closed { background: #dc3545; color: white; }
+        .status-Live { background: #ffc107; color: black; }
+
+        .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .game-tag { display: inline-block; padding: 4px 10px; background: #f0f2f5; border-radius: 6px; font-size: 0.8em; color: #666; margin-bottom: 10px; font-weight: 600; }
+        .card-title { margin: 0 0 10px 0; font-size: 1.2em; color: #1a1a1a; font-weight: 700; }
+        
+        .stats-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9em; color: #555; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+        .prize { color: #28a745; font-weight: bold; font-size: 1.1em; }
+
+        .btn { display: block; width: 100%; padding: 12px; background: #007bff; color: white; text-align: center; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: auto; transition: background 0.2s; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">Home</a>
+            <a href="tournaments.html" class="active">Tournaments</a>
+            <a href="social.html">Social</a>
+            <a href="teams.html">Teams</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">Active Tournaments</h1>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterTournaments('all')">All Games</button>
+            <button class="filter-btn" onclick="filterTournaments('football')">Football (FC/DLS)</button>
+            <button class="filter-btn" onclick="filterTournaments('basketball')">Basketball (NBA)</button>
+            <button class="filter-btn" onclick="filterTournaments('shooter')">Shooters (COD/PUBG)</button>
+        </div>
+
+        <div id="tournamentsGrid" class="grid">
+            <p>Loading tournaments...</p>
+        </div>
+    </div>
+
+    <script>
+        let allTournaments = [];
+
+        async function loadTournaments() {
+            try {
+                // This fetches the data from your server.js
+                const res = await fetch('http://localhost:5000/api/tournaments');
+                const data = await res.json();
+                allTournaments = data.tournaments;
+                renderTournaments(allTournaments);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('tournamentsGrid').innerHTML = '<p>Failed to load tournaments. Is the server running?</p>';
+            }
+        }
+
+        function renderTournaments(tournaments) {
+            const grid = document.getElementById('tournamentsGrid');
+            
+            if (tournaments.length === 0) {
+                grid.innerHTML = '<p>No tournaments found matching your criteria.</p>';
+                return;
+            }
+
+            grid.innerHTML = tournaments.map(t => `
+                <div class="card">
+                    <div class="card-img-container">
+                        <img src="${t.banner}" alt="${t.title}" class="card-img">
+                        <span class="status-badge status-${t.status}">${t.status}</span>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <span class="game-tag">${t.game}</span>
+                            <h3 class="card-title">${t.title}</h3>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-item">🏆 <span class="prize">GHS ${t.prize}</span></div>
+                            <div class="stat-item">💰 Entry: GHS ${t.entryFee}</div>
+                        </div>
+                        
+                        <div class="stats-row" style="border: none; padding: 0; margin: 0 0 15px 0;">
+                            <div class="stat-item">👥 ${t.players}/${t.maxPlayers} Players</div>
+                            <div class="stat-item">📅 ${new Date(t.date).toLocaleDateString()}</div>
+                        </div>
+
+                        <button class="btn" onclick="window.location.href='tournament.html?id=${t.id}'">View Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterTournaments(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') return renderTournaments(allTournaments);
+
+            const filtered = allTournaments.filter(t => {
+                const game = t.game.toLowerCase();
+                if (category === 'football') return game.includes('fc') || game.includes('fifa') || game.includes('dls') || game.includes('efootball');
+                if (category === 'basketball') return game.includes('nba');
+                if (category === 'shooter') return game.includes('duty') || game.includes('pubg');
+                return true;
+            });
+            
+            renderTournaments(filtered);
+        }
+
+        // Load data when page opens
+        loadTournaments();
+    </script>
+</body>
+</html>

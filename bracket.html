@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Bracket - Skillr</title>
+    <style>
+        /* Add bracket styling */
+        .bracket-container {
+            padding: 20px;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bracket-match {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .bracket-match:hover {
+            border-color: #FFD700;
+            transform: translateY(-2px);
+        }
+        
+        .match-players {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .match-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .match-player.winner {
+            background: rgba(0, 200, 81, 0.15);
+            border: 1px solid rgba(0, 200, 81, 0.3);
+        }
+        
+        .match-info {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .bracket-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="bracket-container">
+        <h2 id="bracketTitle">Tournament Bracket</h2>
+        <div id="bracketContent">
+            <!-- Bracket will be loaded here -->
+        </div>
+    </div>
+
+    <script src="realtime.js" type="module" defer></script>
+    <script>
+        async function submitResult(matchId, winnerId) {
+            if (!confirm('Are you sure you want to submit this result?')) return;
+
+            // Prompt for scores to verify the match result
+            const score1 = prompt("Enter score for Player 1:", "0");
+            const score2 = prompt("Enter score for Player 2:", "0");
+            if (score1 === null || score2 === null) return; // Cancelled
+            
+            // Prompt for proof (Screenshot URL)
+            const proof = prompt("Please paste a link to your victory screenshot (e.g., imgur.com/...):", "");
+            if (proof === null) return; // Cancelled
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const tournamentId = new URLSearchParams(window.location.search).get('id');
+                const response = await fetch(`http://localhost:5000/api/tournament/${tournamentId}/match/${matchId}/result`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        winnerId: winnerId,
+                        scores: { player1: parseInt(score1), player2: parseInt(score2) },
+                        proof: proof
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Result submitted successfully!');
+                    window.bracketViewer.refreshBracket();
+                } else {
+                    alert('Error submitting result: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Submit result error:', error);
+                alert('Failed to submit result.');
+            }
+        }
+
+        async function verifyMatch(matchId) {
+            if (!confirm('Verify this match result and advance the winner?')) return;
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const tournamentId = new URLSearchParams(window.location.search).get('id');
+                
+                // Assuming an endpoint exists for admin verification
+                const response = await fetch(`http://localhost:5000/api/tournament/${tournamentId}/match/${matchId}/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Match verified!');
+                    window.bracketViewer.refreshBracket();
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+            }
+        }
+
+        class TournamentBracketViewer {
+            constructor(tournamentId) {
+                this.tournamentId = tournamentId;
+                this.bracket = null;
+                this.initialize();
+            }
+
+            async initialize() {
+                await this.loadBracket();
+                this.setupRealtimeUpdates();
+                this.render();
+            }
+
+            async loadBracket() {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/tournament/${this.tournamentId}/bracket`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.bracket = data.bracket;
+                    }
+                } catch (error) {
+                    console.error('Error loading bracket:', error);
+                }
+            }
+
+            setupRealtimeUpdates() {
+                // Subscribe to bracket updates
+                if (window.realtimeManager) {
+                    window.realtimeManager.subscribe('tournament', this.tournamentId);
+                    
+                    // Listen for bracket updates via DOM events
+                    document.addEventListener('realtime:tournament_update', (event) => {
+                        const data = event.detail;
+                        if (data.tournamentId == this.tournamentId && data.data.event === 'match_result') {
+                            console.log('Bracket update received via WebSocket.');
+                            this.refreshBracket();
+                        }
+                    });
+                }
+            }
+
+            async refreshBracket() {
+                await this.loadBracket();
+                this.render();
+            }
+
+            render() {
+                if (!this.bracket) {
+                    document.getElementById('bracketContent').innerHTML = `
+                        <div class="loading" style="color: #FFD700; text-align: center; padding: 40px;">No bracket has been generated for this tournament yet.</div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                
+                // Group matches by round
+                const matchesByRound = {};
+                this.bracket.matches.forEach(match => {
+                    if (!matchesByRound[match.round]) {
+                        matchesByRound[match.round] = [];
+                    }
+                    matchesByRound[match.round].push(match);
+                });
+
+                // Render each round
+                Object.keys(matchesByRound).sort().forEach(roundNumber => {
+                    const roundMatches = matchesByRound[roundNumber];
+                    const roundName = this.getRoundName(parseInt(roundNumber), this.bracket.rounds.length);
+                    
+                    html += `
+                        <div class="bracket-round">
+                            <h3>${roundName}</h3>
+                            ${roundMatches.map(match => this.renderMatch(match)).join('')}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('bracketContent').innerHTML = html;
+            }
+
+            renderMatch(match) {
+                const isWinner1 = match.result && match.result.winner === match.player1?._id;
+                const isWinner2 = match.result && match.result.winner === match.player2?._id;
+                const scheduledTime = match.scheduledTime ? new Date(match.scheduledTime).toLocaleString() : 'TBD';
+                
+                return `
+                    <div class="bracket-match" data-match-id="${match._id}">
+                        <div class="match-players">
+                            <div class="match-player ${isWinner1 ? 'winner' : ''}">
+                                <span class="player-name">${match.player1?.username || 'TBD'}</span>
+                                ${match.result?.scores?.player1 ? `<span class="score">${match.result.scores.player1}</span>` : ''}
+                            </div>
+                            <span class="vs">VS</span>
+                            <div class="match-player ${isWinner2 ? 'winner' : ''}">
+                                ${match.result?.scores?.player2 ? `<span class="score">${match.result.scores.player2}</span>` : ''}
+                                <span class="player-name">${match.player2?.username || 'TBD'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="match-info">
+                            ${match.status === 'completed' ? 
+                                `<span style="color: #00C851;">Completed</span>` :
+                                match.status === 'scheduled' ? 
+                                `<span style="color: #FFD700;">Scheduled</span>` :
+                                match.status === 'under_review' ?
+                                `<span style="color: #FF8800;">⚠ Under Review</span>` :
+                                match.status === 'awaiting_confirmation' ?
+                                `<span style="color: #00D4FF;">⏱ Confirming...</span>` :
+                                match.status === 'dispute' ?
+                                `<span style="color: #FF4444;">⚠ Dispute</span>` :
+                                `<span style="color: #aaa;">Pending</span>`
+                            }
+                        </div>
+                        
+                        ${this.renderMatchActions(match)}
+                    </div>
+                `;
+            }
+
+            renderMatchActions(match) {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const isPlayerInMatch = match.player1?._id == user._id || match.player2?._id == user._id;
+                const isAdmin = user.role === 'admin';
+                
+                if ((isPlayerInMatch || isAdmin) && match.status !== 'completed') {
+                // Admin Verification View (Disputes or Manual Review)
+                if (isAdmin && (match.status === 'under_review' || match.status === 'dispute')) {
+                    return `
+                        <div class="bracket-actions" style="flex-direction: column; gap: 5px;">
+                            <div style="font-size: 0.8rem; color: #aaa;">
+                                Claim: ${match.claim?.winnerId === match.player1?._id ? match.player1?.username : match.player2?.username} won
+                                ${match.claim?.proof ? `| <a href="${match.claim.proof}" target="_blank" style="color:#00D4FF">View Proof</a>` : ''}
+                            </div>
+                            <button onclick="verifyMatch('${match._id}')" class="btn btn-sm btn-success">✅ Verify Result</button>
+                        </div>
+                    `;
+                }
+
+                // Peer Confirmation View (Consensus Model)
+                if (isPlayerInMatch && match.status === 'awaiting_confirmation') {
+                    const myClaim = match.claims && match.claims[user.id];
+                    const opponentId = match.player1._id == user._id ? match.player2._id : match.player1._id;
+                    const opponentClaim = match.claims && match.claims[opponentId];
+
+                    if (myClaim) {
+                        return `<div class="bracket-actions"><span style="color:#aaa; font-size:0.9rem;">Waiting for opponent...</span></div>`;
+                    } else if (opponentClaim) {
+                        const claimedWinnerName = opponentClaim.winnerId == match.player1._id ? match.player1.username : match.player2.username;
+                        return `
+                            <div class="bracket-actions" style="flex-direction: column; gap: 5px;">
+                                <div style="font-size: 0.8rem; color: #FFD700;">Opponent says: ${claimedWinnerName} Won</div>
+                                <div style="display:flex; gap:5px;">
+                                    <button onclick="submitResult('${match._id}', '${opponentClaim.winnerId}')" class="btn btn-sm btn-success">
+                                        ✅ Confirm
+                                    </button>
+                                    <button onclick="submitResult('${match._id}', '${user._id}')" class="btn btn-sm btn-danger">
+                                        ❌ Dispute
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Player Submission View
+                if ((isPlayerInMatch || isAdmin) && match.status === 'scheduled') {
+                    return `
+                        <div class="bracket-actions">
+                            <button onclick="submitResult('${match._id}', '${match.player1?._id}')" 
+                                    class="btn btn-sm ${match.player1?._id === user._id ? 'btn-primary' : 'btn-secondary'}">
+                                ${match.player1?.username} Won
+                            </button>
+                            ${match.player2 ? `
+                            <button onclick="submitResult('${match._id}', '${match.player2?._id}')" 
+                                    class="btn btn-sm ${match.player2?._id === user._id ? 'btn-primary' : 'btn-secondary'}">
+                                ${match.player2?.username} Won
+                            </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                return '';
+            }
+
+            getRoundName(roundNumber, totalRounds) {
+                
+                if (roundNumber === totalRounds) return '🏆 Final';
+                if (roundNumber === totalRounds - 1) return 'Semi-Finals';
+                if (roundNumber === totalRounds - 2) return 'Quarter-Finals';
+                return `Round ${roundNumber}`;
+            }
+        }
+
+        // Initialize bracket viewer
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tournamentId = urlParams.get('id');
+            
+            if (tournamentId) {
+                window.bracketViewer = new TournamentBracketViewer(tournamentId);
+            }
+        });
+    </script>
+</body>
+</html>

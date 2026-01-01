@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skillr - Admin Analytics</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 2em; font-weight: bold; color: #007bff; }
+        .stat-label { color: #666; }
+        h2 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
+        .error { color: red; padding: 20px; background: white; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">Home</a>
+            <a href="admin.html">Admin Panel</a>
+            <a href="analytics.html">Analytics</a>
+        </div>
+
+        <h1>Analytics Dashboard</h1>
+
+        <div id="dashboardContent">
+            <!-- Revenue Section -->
+            <div class="grid">
+                <div class="card">
+                    <h2>Revenue (Monthly)</h2>
+                    <div id="revenueStats">Loading...</div>
+                </div>
+                <div class="card">
+                    <h2>Engagement (7 Days)</h2>
+                    <div id="engagementStats">Loading...</div>
+                </div>
+                <div class="card">
+                    <h2>Peak Times</h2>
+                    <div id="peakStats">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Detailed Reports -->
+            <div class="grid">
+                <div class="card">
+                    <h2>Retention Report</h2>
+                    <div id="retentionStats">Loading...</div>
+                </div>
+                <div class="card">
+                    <h2>Recommendations</h2>
+                    <ul id="recommendationsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            document.body.innerHTML = '<div class="container"><p class="error">Please login as admin to view analytics.</p></div>';
+        }
+
+        async function loadAnalytics() {
+            const headers = { 'Authorization': `Bearer ${token}` };
+
+            try {
+                // Load Revenue
+                const revRes = await fetch(`${API_URL}/admin/analytics/revenue`, { headers });
+                const revData = await revRes.json();
+                if (revData.success) {
+                    document.getElementById('revenueStats').innerHTML = `
+                        <div class="stat-value">GHS ${revData.report.summary.totalRevenue.toLocaleString()}</div>
+                        <div class="stat-label">Total Revenue</div>
+                        <p>Transactions: ${revData.report.summary.totalTransactions}</p>
+                        <p>Trend: ${revData.report.growth.trend.toUpperCase()} (${revData.report.growth.percentage}%)</p>
+                    `;
+                }
+
+                // Load Engagement
+                const engRes = await fetch(`${API_URL}/admin/analytics/engagement`, { headers });
+                const engData = await engRes.json();
+                if (engData.success) {
+                    document.getElementById('engagementStats').innerHTML = `
+                        <div class="stat-value">${engData.report.totalActiveUsers}</div>
+                        <div class="stat-label">Active Users</div>
+                        <p>Avg Session: ${Math.round(engData.report.averageSessionDuration / 60)} mins</p>
+                        <p>Total Sessions: ${engData.report.totalSessions}</p>
+                    `;
+                }
+
+                // Load Peak Times
+                const peakRes = await fetch(`${API_URL}/admin/analytics/peak-times`, { headers });
+                const peakData = await peakRes.json();
+                if (peakData.success) {
+                    const topHour = peakData.analysis.peakHours[0];
+                    document.getElementById('peakStats').innerHTML = `
+                        <div class="stat-value">${topHour ? topHour.hour : 'N/A'}</div>
+                        <div class="stat-label">Busiest Hour</div>
+                        <p>Active Users: ${topHour ? topHour.activeUsers : 0}</p>
+                    `;
+                    
+                    // Recommendations
+                    const recList = document.getElementById('recommendationsList');
+                    if (peakData.analysis.recommendations.length > 0) {
+                        recList.innerHTML = peakData.analysis.recommendations.map(r => 
+                            `<li><strong>${r.type}:</strong> ${r.suggestion}</li>`
+                        ).join('');
+                    } else {
+                        recList.innerHTML = '<li>No current recommendations.</li>';
+                    }
+                }
+
+                // Load Retention
+                const retRes = await fetch(`${API_URL}/admin/analytics/retention`, { headers });
+                const retData = await retRes.json();
+                if (retData.success) {
+                    const churn = retData.report.userChurn;
+                    document.getElementById('retentionStats').innerHTML = `
+                        <p><strong>Churn Rate:</strong> ${churn.churnRate.toFixed(1)}%</p>
+                        <p><strong>New Users:</strong> ${churn.newUsers}</p>
+                        <p><strong>Returning:</strong> ${churn.returningUsers}</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Analytics load error:', error);
+            }
+        }
+
+        loadAnalytics();
+    </script>
+</body>
+</html>

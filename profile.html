@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Skillr</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #00D4FF, #0099FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #00D4FF, #0099FF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #00D4FF;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: #aaa;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            color: #00D4FF;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-link.active {
+            color: #00D4FF;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .logout-btn {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Profile Sidebar */
+        .profile-sidebar {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar-large {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #00D4FF, #0099FF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .avatar-upload {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-upload-btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-upload-btn:hover {
+            background: #00D4FF;
+            color: #000;
+        }
+
+        .avatar-upload input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .profile-stats {
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            color: #aaa;
+        }
+
+        .stat-value {
+            color: #00D4FF;
+            font-weight: bold;
+        }
+
+        /* Skillr Points */
+        .skillr-points-card {
+            background: linear-gradient(45deg, rgba(255, 0, 128, 0.1), rgba(255, 140, 0, 0.1));
+            border: 2px solid rgba(255, 0, 128, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .points-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FF0080;
+            margin: 10px 0;
+        }
+
+        .points-label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Profile Navigation */
+        .profile-nav {
+            list-style: none;
+            margin-top: 30px;
+        }
+
+        .profile-nav li {
+            margin-bottom: 10px;
+        }
+
+        .profile-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #aaa;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-nav a:hover,
+        .profile-nav a.active {
+            color: #00D4FF;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* Profile Content */
+        .profile-content {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #00D4FF;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #ccc;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #00D4FF;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .form-hint {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+        }
+
+        .payment-details {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: bold;
+            color: #00D4FF;
+        }
+
+        .payment-number {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00D4FF;
+            border-color: #00D4FF;
+        }
+
+        .add-payment-btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00D4FF;
+            border: 2px dashed #00D4FF;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .add-payment-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        /* Notification Settings */
+        .notification-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-info h4 {
+            color: #00D4FF;
+            margin-bottom: 5px;
+        }
+
+        .notification-info p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #00D4FF;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Buttons */
+        .save-btn {
+            background: linear-gradient(45deg, #00C851, #007E33);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 200, 81, 0.3);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        /* Messages */
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 200, 81, 0.1);
+            border: 1px solid rgba(0, 200, 81, 0.3);
+            color: #00C851;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 50px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .user-nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .profile-sidebar,
+            .profile-content {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" class="logo">
+                <span style="font-size: 2rem;">🎯</span>
+                <h1>SKILLR</h1>
+            </a>
+            
+            <div class="user-nav">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">S</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="user-role" id="userRole">Player</span>
+                    </div>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">🎮 Tournaments</a>
+                    <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+                    <a href="profile.html" class="nav-link active">👤 Profile</a>
+                </div>
+                <!-- Add to nav menu -->
+                <a href="leaderboard.html" class="nav-link">🏆 Leaderboards</a>
+                <a href="social.html" class="nav-link">👥 Social</a>
+                <a href="teams.html" class="nav-link">🤝 Teams</a>
+
+                <!-- For admin users -->
+                <a href="analytics.html" class="nav-link">📊 Analytics</a>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <!-- Profile Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-avatar">
+                    <div class="avatar-large" id="profileAvatar">S</div>
+                    <div class="avatar-upload">
+                        <button class="avatar-upload-btn">Change Avatar</button>
+                        <input type="file" accept="image/*" onchange="uploadAvatar(event)">
+                    </div>
+                </div>
+
+                <!-- Skillr Points -->
+                <div class="skillr-points-card">
+                    <div class="points-label">Your Skillr Points</div>
+                    <div class="points-value" id="skillrPoints">0</div>
+                    <div class="points-label">Earn points by competing and winning</div>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Member Since</span>
+                        <span class="stat-value" id="memberSince">2024</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tournaments</span>
+                        <span class="stat-value" id="totalTournaments">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Earnings</span>
+                        <span class="stat-value" id="totalEarnings">₵ 0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Win Rate</span>
+                        <span class="stat-value" id="winRate">0%</span>
+                    </div>
+                </div>
+
+                <ul class="profile-nav">
+                    <li><a href="#personal" class="active" onclick="showSection('personal')">👤 Personal Info</a></li>
+                    <li><a href="#security" onclick="showSection('security')">🔒 Security</a></li>
+                    <li><a href="#payments" onclick="showSection('payments')">💳 Payment Methods</a></li>
+                    <li><a href="#notifications" onclick="showSection('notifications')">🔔 Notifications</a></li>
+                    <li><a href="#privacy" onclick="showSection('privacy')">🛡️ Privacy</a></li>
+                </ul>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <!-- Personal Info Section -->
+                <div class="profile-section" id="personalSection">
+                    <h2 class="section-title">👤 Personal Information</h2>
+                    
+                    <div class="error-message" id="personalError"></div>
+                    <div class="success-message" id="personalSuccess"></div>
+                    
+                    <form id="personalForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" id="firstName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" id="lastName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">In-Game Username</label>
+                                <input type="text" class="form-input" id="username" required>
+                                <p class="form-hint">This is your display name in tournaments</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-input" id="email" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-input" id="phone" 
+                                       pattern="[0-9\s]{10,15}" required>
+                                <p class="form-hint">Used for mobile money payments</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" class="form-input" id="dob">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Bio</label>
+                            <textarea class="form-input" id="bio" rows="4" 
+                                      placeholder="Tell us about your gaming skills and experience..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Main Game</label>
+                            <select class="form-input" id="mainGame">
+                                <option value="">Select your main game</option>
+                                <option value="Call of Duty: Mobile">Call of Duty: Mobile</option>
+                                <option value="Free Fire">Free Fire</option>
+                                <option value="PUBG Mobile">PUBG Mobile</option>
+                                <option value="Mobile Legends">Mobile Legends</option>
+                                <option value="Fortnite">Fortnite</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="submit" class="save-btn" id="personalSaveBtn">
+                                <span id="personalButtonText">💾 Save Changes</span>
+                            </button>
+                            <button type="button" class="cancel-btn" onclick="resetPersonalForm()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Section -->
+                <div class="profile-section" id="securitySection" style="display: none;">
+                    <h2 class="section-title">🔒 Security Settings</h2>
+                    
+                    <div class="error-message" id="securityError"></div>
+                    <div class="success-message" id="securitySuccess"></div>
+                    
+                    <form id="securityForm">
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-input" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-input" id="newPassword" required>
+                                <p class="form-hint">Minimum 6 characters</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-input" id="confirmNewPassword" required>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="submit" class="save-btn" id="securitySaveBtn">
+                                <span id="securityButtonText">🔑 Change Password</span>
+                            </button>
+                            <button type="button" class="cancel-btn" onclick="resetSecurityForm()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment Methods Section -->
+                <div class="profile-section" id="paymentsSection" style="display: none;">
+                    <h2 class="section-title">💳 Payment Methods</h2>
+                    
+                    <div class="payment-methods" id="paymentMethodsList">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading payment methods...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="add-payment-btn" onclick="addPaymentMethod()">
+                        + Add Payment Method
+                    </div>
+                </div>
+
+                <!-- Notifications Section -->
+                <div class="profile-section" id="notificationsSection" style="display: none;">
+                    <h2 class="section-title">🔔 Notification Preferences</h2>
+                    
+                    <div class="notification-settings">
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Tournament Reminders</h4>
+                                <p>Get notified before your tournaments start</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="tournamentReminders" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Payment Receipts</h4>
+                                <p>Receive SMS confirmation for payments</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="paymentReceipts" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Prize Announcements</h4>
+                                <p>Get notified when you win prizes</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="prizeAnnouncements" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>New Tournaments</h4>
+                                <p>Be notified about new tournament launches</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="newTournaments" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Skillr Points Updates</h4>
+                                <p>Get notified about your Skillr points changes</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="pointsUpdates" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="save-btn" onclick="saveNotificationSettings()">
+                            💾 Save Preferences
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Privacy Section -->
+                <div class="profile-section" id="privacySection" style="display: none;">
+                    <h2 class="section-title">🛡️ Privacy Settings</h2>
+                    
+                    <div class="notification-settings">
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Public Profile</h4>
+                                <p>Allow other players to view your profile</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="publicProfile" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Show Tournament History</h4>
+                                <p>Display your past tournaments on your profile</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showTournamentHistory" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Show Earnings</h4>
+                                <p>Display your total earnings publicly</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showEarnings" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Show Skillr Points</h4>
+                                <p>Display your Skillr points on your profile</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showSkillrPoints" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <label class="form-label">Data Management</label>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="button" class="action-btn" onclick="exportData()">
+                                📥 Export My Data
+                            </button>
+                            <button type="button" class="action-btn" style="color: #ff4444;" onclick="deleteAccount()">
+                                🗑️ Delete Account
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="save-btn" onclick="savePrivacySettings()">
+                            💾 Save Privacy Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2024 Skillr | Prove Your Skills, Earn Real Rewards</p>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let originalPersonalData = null;
+
+        // Check authentication
+        async function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('user');
+            
+            if (!token || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+                
+                const data = await response.json();
+                currentUser = data.user;
+                updateUserUI();
+                loadProfileData();
+                
+            } catch (error) {
+                console.error('Auth error:', error);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateUserUI() {
+            if (!currentUser) return;
+            
+            // Update user name
+            document.getElementById('userName').textContent = currentUser.username || 'Player';
+            
+            // Update avatar with first letter of username
+            const firstLetter = (currentUser.username || 'S').charAt(0).toUpperCase();
+            document.getElementById('userAvatar').textContent = firstLetter;
+            document.getElementById('profileAvatar').textContent = firstLetter;
+            
+            // Update role if available
+            if (currentUser.role) {
+                document.getElementById('userRole').textContent = currentUser.role;
+            }
+
+            // Calculate Skillr Points
+            const skillrPoints = (currentUser.tournamentsPlayed || 0) * 10 + Math.floor((currentUser.totalWinnings || 0) / 100) * 100;
+            document.getElementById('skillrPoints').textContent = skillrPoints;
+        }
+
+        function loadProfileData() {
+            if (!currentUser) return;
+            
+            // Load personal info
+            loadPersonalInfo();
+            
+            // Load stats
+            loadUserStats();
+            
+            // Load payment methods
+            loadPaymentMethods();
+        }
+
+        function loadPersonalInfo() {
+            // Split full name into first and last
+            const fullName = currentUser.fullName || '';
+            const nameParts = fullName.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            // Fill personal form
+            document.getElementById('firstName').value = firstName;
+            document.getElementById('lastName').value = lastName;
+            document.getElementById('username').value = currentUser.username || '';
+            document.getElementById('email').value = currentUser.email || '';
+            document.getElementById('phone').value = currentUser.phone || '';
+            document.getElementById('dob').value = currentUser.dob || '';
+            document.getElementById('bio').value = currentUser.bio || '';
+            document.getElementById('mainGame').value = currentUser.mainGame || '';
+            
+            // Save original data for reset
+            originalPersonalData = {
+                firstName,
+                lastName,
+                username: currentUser.username,
+                email: currentUser.email,
+                phone: currentUser.phone,
+                dob: currentUser.dob,
+                bio: currentUser.bio,
+                mainGame: currentUser.mainGame || ''
+            };
+            
+            // Format phone number
+            formatPhoneNumber();
+        }
+
+        function loadUserStats() {
+            // Update member since
+            if (currentUser.createdAt) {
+                const year = new Date(currentUser.createdAt).getFullYear();
+                document.getElementById('memberSince').textContent = year;
+            }
+            
+            // Update other stats
+            document.getElementById('totalTournaments').textContent = currentUser.tournamentsPlayed || 0;
+            document.getElementById('totalEarnings').textContent = `₵ ${currentUser.totalWinnings || 0}`;
+            
+            // Calculate win rate (placeholder)
+            const winRate = currentUser.tournamentsPlayed > 0 ? 
+                Math.round((Math.min(100, Math.random() * 30) + 10)) : 0;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+        }
+
+        async function loadPaymentMethods() {
+            const paymentMethodsList = document.getElementById('paymentMethodsList');
+            
+            // In a real app, this would come from an API
+            // For now, show a placeholder
+            paymentMethodsList.innerHTML = `
+                <div class="payment-method">
+                    <div class="payment-icon">📱</div>
+                    <div class="payment-details">
+                        <div class="payment-name">MTN MoMo</div>
+                        <div class="payment-number">${currentUser.phone || 'Not set'}</div>
+                    </div>
+                    <div class="payment-actions">
+                        <button class="action-btn" onclick="editPaymentMethod('MTN')">Edit</button>
+                        <button class="action-btn" onclick="removePaymentMethod('MTN')">Remove</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatPhoneNumber() {
+            const phoneInput = document.getElementById('phone');
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 0) {
+                    if (value.length <= 3) {
+                        value = value;
+                    } else if (value.length <= 6) {
+                        value = value.slice(0, 3) + ' ' + value.slice(3);
+                    } else {
+                        value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6, 10);
+                    }
+                }
+                e.target.value = value;
+            });
+        }
+
+        async function savePersonalInfo(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.replace(/\s/g, '');
+            const dob = document.getElementById('dob').value;
+            const bio = document.getElementById('bio').value.trim();
+            const mainGame = document.getElementById('mainGame').value;
+            
+            const errorMessage = document.getElementById('personalError');
+            const successMessage = document.getElementById('personalSuccess');
+            const saveButton = document.getElementById('personalSaveBtn');
+            const buttonText = document.getElementById('personalButtonText');
+            
+            // Reset messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Validation
+            if (!firstName || !lastName || !username || !email || !phone) {
+                showError('Please fill in all required fields', errorMessage);
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address', errorMessage);
+                return;
+            }
+            
+            // Validate Ghana phone number
+            const ghanaPhoneRegex = /^(0?(55|24|54|59|20|50|27|57|26|56))[0-9]{7}$/;
+            if (!ghanaPhoneRegex.test(phone)) {
+                showError('Please enter a valid Ghanaian phone number (e.g., 0551234567)', errorMessage);
+                return;
+            }
+            
+            // Show loading
+            saveButton.disabled = true;
+            buttonText.innerHTML = '<span class="loading-spinner"></span> Saving...';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                const response = await fetch('http://localhost:5000/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        fullName: `${firstName} ${lastName}`,
+                        phone: phone,
+                        bio: bio,
+                        dob: dob,
+                        mainGame: mainGame
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update local storage
+                    currentUser = { ...currentUser, ...data.user };
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    
+                    // Update UI
+                    updateUserUI();
+                    
+                    // Show success
+                    showSuccess('Profile updated successfully!', successMessage);
+                    
+                    // Update original data
+                    originalPersonalData = {
+                        firstName,
+                        lastName,
+                        username,
+                        email,
+                        phone,
+                        dob,
+                        bio,
+                        mainGame
+                    };
+                    
+                } else {
+                    showError(data.error || 'Failed to update profile', errorMessage);
+                }
+                
+            } catch (error) {
+                console.error('Update error:', error);
+                showError('Network error. Please check your connection.', errorMessage);
+            } finally {
+                // Reset button
+                saveButton.disabled = false;
+                buttonText.textContent = '💾 Save Changes';
+            }
+        }
+
+        async function changePassword(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            
+            const errorMessage = document.getElementById('securityError');
+            const successMessage = document.getElementById('securitySuccess');
+            const saveButton = document.getElementById('securitySaveBtn');
+            const buttonText = document.getElementById('securityButtonText');
+            
+            // Reset messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Validation
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                showError('Please fill in all fields', errorMessage);
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showError('New password must be at least 6 characters long', errorMessage);
+                return;
+            }
+            
+            if (newPassword !== confirmNewPassword) {
+                showError('New passwords do not match', errorMessage);
+                return;
+            }
+            
+            // Show loading
+            saveButton.disabled = true;
+            buttonText.innerHTML = '<span class="loading-spinner"></span> Changing...';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                const response = await fetch('http://localhost:5000/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Clear form
+                    resetSecurityForm();
+                    
+                    // Show success
+                    showSuccess('Password changed successfully!', successMessage);
+                    
+                } else {
+                    showError(data.error || 'Failed to change password', errorMessage);
+                }
+                
+            } catch (error) {
+                console.error('Password change error:', error);
+                showError('Network error. Please check your connection.', errorMessage);
+            } finally {
+                // Reset button
+                saveButton.disabled = false;
+                buttonText.textContent = '🔑 Change Password';
+            }
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.profile-nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(`${sectionId}Section`).style.display = 'block';
+            
+            // Add active class to selected nav link
+            document.querySelector(`.profile-nav a[href="#${sectionId}"]`).classList.add('active');
+        }
+
+        function resetPersonalForm() {
+            if (!originalPersonalData) return;
+            
+            document.getElementById('firstName').value = originalPersonalData.firstName;
+            document.getElementById('lastName').value = originalPersonalData.lastName;
+            document.getElementById('username').value = originalPersonalData.username;
+            document.getElementById('email').value = originalPersonalData.email;
+            document.getElementById('phone').value = originalPersonalData.phone;
+            document.getElementById('dob').value = originalPersonalData.dob || '';
+            document.getElementById('bio').value = originalPersonalData.bio || '';
+            document.getElementById('mainGame').value = originalPersonalData.mainGame || '';
+            
+            // Hide messages
+            document.getElementById('personalError').style.display = 'none';
+            document.getElementById('personalSuccess').style.display = 'none';
+        }
+
+        function resetSecurityForm() {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            
+            // Hide messages
+            document.getElementById('securityError').style.display = 'none';
+            document.getElementById('securitySuccess').style.display = 'none';
+        }
+
+        function addPaymentMethod() {
+            alert('Feature coming soon: Add new payment method');
+        }
+
+        function editPaymentMethod(method) {
+            alert(`Edit ${method} payment method`);
+        }
+
+        function removePaymentMethod(method) {
+            if (confirm(`Are you sure you want to remove your ${method} payment method?`)) {
+                alert(`${method} payment method removed`);
+            }
+        }
+
+        function saveNotificationSettings() {
+            const tournamentReminders = document.getElementById('tournamentReminders').checked;
+            const paymentReceipts = document.getElementById('paymentReceipts').checked;
+            const prizeAnnouncements = document.getElementById('prizeAnnouncements').checked;
+            const newTournaments = document.getElementById('newTournaments').checked;
+            const pointsUpdates = document.getElementById('pointsUpdates').checked;
+            
+            // Save to localStorage for now
+            localStorage.setItem('notificationSettings', JSON.stringify({
+                tournamentReminders,
+                paymentReceipts,
+                prizeAnnouncements,
+                newTournaments,
+                pointsUpdates
+            }));
+            
+            showNotification('Notification preferences saved!');
+        }
+
+        function savePrivacySettings() {
+            const publicProfile = document.getElementById('publicProfile').checked;
+            const showTournamentHistory = document.getElementById('showTournamentHistory').checked;
+            const showEarnings = document.getElementById('showEarnings').checked;
+            const showSkillrPoints = document.getElementById('showSkillrPoints').checked;
+            
+            // Save to localStorage for now
+            localStorage.setItem('privacySettings', JSON.stringify({
+                publicProfile,
+                showTournamentHistory,
+                showEarnings,
+                showSkillrPoints
+            }));
+            
+            showNotification('Privacy settings saved!');
+        }
+
+        function exportData() {
+            alert('Data export feature coming soon!');
+        }
+
+        function deleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                alert('Account deletion feature coming soon!');
+            }
+        }
+
+        function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('Image size should be less than 5MB');
+                return;
+            }
+            
+            // In a real app, this would upload to server
+            // For now, create a local preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatar = document.getElementById('profileAvatar');
+                avatar.style.backgroundImage = `url(${e.target.result})`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+                avatar.textContent = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function showError(message, element) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showSuccess(message, element) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showNotification(message) {
+            alert(message); // In a real app, use a proper notification system
+        }
+
+        // Initialize profile
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            
+            // Add form submit events
+            document.getElementById('personalForm').addEventListener('submit', savePersonalInfo);
+            document.getElementById('securityForm').addEventListener('submit', changePassword);
+            
+            // Load saved settings
+            const notificationSettings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+            if (notificationSettings.tournamentReminders !== undefined) {
+                document.getElementById('tournamentReminders').checked = notificationSettings.tournamentReminders;
+            }
+            if (notificationSettings.paymentReceipts !== undefined) {
+                document.getElementById('paymentReceipts').checked = notificationSettings.paymentReceipts;
+            }
+            if (notificationSettings.prizeAnnouncements !== undefined) {
+                document.getElementById('prizeAnnouncements').checked = notificationSettings.prizeAnnouncements;
+            }
+            if (notificationSettings.newTournaments !== undefined) {
+                document.getElementById('newTournaments').checked = notificationSettings.newTournaments;
+            }
+            if (notificationSettings.pointsUpdates !== undefined) {
+                document.getElementById('pointsUpdates').checked = notificationSettings.pointsUpdates;
+            }
+            
+            const privacySettings = JSON.parse(localStorage.getItem('privacySettings') || '{}');
+            if (privacySettings.publicProfile !== undefined) {
+                document.getElementById('publicProfile').checked = privacySettings.publicProfile;
+            }
+            if (privacySettings.showTournamentHistory !== undefined) {
+                document.getElementById('showTournamentHistory').checked = privacySettings.showTournamentHistory;
+            }
+            if (privacySettings.showEarnings !== undefined) {
+                document.getElementById('showEarnings').checked = privacySettings.showEarnings;
+            }
+            if (privacySettings.showSkillrPoints !== undefined) {
+                document.getElementById('showSkillrPoints').checked = privacySettings.showSkillrPoints;
+            }
+        });
+    </script>
+</body>
+</html>
