@@ -4,12 +4,13 @@ const bcrypt = require('bcryptjs');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const fs = require('fs');
 const connectDB = require('./db');
 
 // Import Phase 6 modules
 const TournamentBracket = require('./bracketGenerator');
-const LeaderboardManager = require('./leaderboardManager');
-const SocialManager = require('./socialManager');
+const LeaderboardManager = require('./leaderboardmanager');
+const SocialManager = require('./socialmanager');
 const AnalyticsTracker = require('./analyticsTracker');
 
 const User = require('./User');
@@ -19,6 +20,22 @@ const Payment = require('./Payment');
 
 // Connect to MongoDB
 connectDB();
+
+// DEBUG: Log directory structure to troubleshoot missing client folder
+console.log('Current directory (__dirname):', __dirname);
+try {
+  const rootDir = path.join(__dirname, '..');
+  console.log('Root directory contents:', fs.readdirSync(rootDir));
+  
+  const clientPath = path.join(__dirname, '../client');
+  if (fs.existsSync(clientPath)) {
+    console.log('Client directory contents:', fs.readdirSync(clientPath));
+  } else {
+    console.log('Client directory DOES NOT EXIST at:', clientPath);
+  }
+} catch (error) {
+  console.error('Error listing directories:', error);
+}
 
 const app = express();
 const server = http.createServer(app);
