@@ -8,8 +8,8 @@ const connectDB = require('./db');
 
 // Import Phase 6 modules
 const TournamentBracket = require('./bracketGenerator');
-const LeaderboardManager = require('./leaderboardmanager');
-const SocialManager = require('./socialmanager');
+const LeaderboardManager = require('./leaderboardManager');
+const SocialManager = require('./socialManager');
 const AnalyticsTracker = require('./analyticsTracker');
 
 const User = require('./User');
@@ -169,12 +169,7 @@ function broadcastToUser(userId, data) {
 
 // Home
 app.get('/', (req, res) => {
-  res.json({
-    message: '🎮 Skillr - Competitive Gaming Platform',
-    status: 'OK',
-    version: '1.0.0',
-    features: ['User Authentication', 'Tournament Registration', 'Mobile Money Payments', 'Admin Panel', 'Real-time Updates', 'Tournament Brackets', 'Leaderboards', 'Social Features', 'Advanced Analytics']
-  });
+  res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 
 // Health check
